@@ -11,6 +11,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.os.Handler;
 import android.service.wallpaper.WallpaperService;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 
 import com.aj.walls.hot.R.drawable;
@@ -38,6 +39,8 @@ public class TheWall extends WallpaperService {
 	}
 
 	public class GalleryEngine extends Engine implements OnSharedPreferenceChangeListener {
+		private int index = 0;
+		private int[] drawables = new int[] { drawable._001, drawable._002, drawable._003, drawable._004, drawable._005 };
 
 		@Override
 		public void onCreate(SurfaceHolder surfaceHolder) {
@@ -57,14 +60,35 @@ public class TheWall extends WallpaperService {
 
 		}
 
+		@Override
+		public void onTouchEvent(MotionEvent event) {
+			super.onTouchEvent(event);
+
+			int action = event.getAction();
+			if (action == MotionEvent.ACTION_DOWN) {
+				nextIndex();
+				drawFrame();
+			}
+
+		}
+
+		private void nextIndex() {
+			index++;
+			if (index >= drawables.length)
+				index = 0;
+		}
+
+		private Bitmap getBitmapForCurrentIndex() {
+			return BitmapFactory.decodeResource(getResources(), drawables[index]);
+		}
+
 		private void drawFrame() {
-			Rect window = null;
+
 			Rect surfaceFrame = getSurfaceHolder().getSurfaceFrame();
 			float surfaceHeight = (float) surfaceFrame.height();
 			if (surfaceHeight == 0)
 				return;
-			Bitmap bitmapOfFrame = getTestResource();
-			final SurfaceHolder holder = getSurfaceHolder();
+			Bitmap bitmapOfFrame = getBitmapForCurrentIndex();
 
 			float scale = (float) bitmapOfFrame.getHeight() / surfaceHeight;
 
@@ -73,8 +97,13 @@ public class TheWall extends WallpaperService {
 			if (allowedWidth < surfaceFrame.width()) {
 				padding = (surfaceFrame.width() - allowedWidth) / 2f;
 			}
-			window = new Rect((int) padding, 0, (int) (allowedWidth + padding), surfaceFrame.height());
+			Rect window = new Rect((int) padding, 0, (int) (allowedWidth + padding), surfaceFrame.height());
+			drawBitmap(bitmapOfFrame, window);
+		}
+
+		private void drawBitmap(Bitmap bitmapOfFrame, Rect window) {
 			Canvas c = null;
+			final SurfaceHolder holder = getSurfaceHolder();
 			try {
 				c = holder.lockCanvas();
 				if (c != null && bitmapOfFrame != null) {
