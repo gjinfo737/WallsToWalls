@@ -4,6 +4,7 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -11,6 +12,8 @@ import android.graphics.Rect;
 import android.os.Handler;
 import android.service.wallpaper.WallpaperService;
 import android.view.SurfaceHolder;
+
+import com.aj.walls.hot.R.drawable;
 
 public class TheWall extends WallpaperService {
 	private final Handler handler = new Handler();
@@ -60,14 +63,17 @@ public class TheWall extends WallpaperService {
 			float surfaceHeight = (float) surfaceFrame.height();
 			if (surfaceHeight == 0)
 				return;
-			Bitmap bitmapOfFrame = getTestBM();
+			Bitmap bitmapOfFrame = getTestResource();
 			final SurfaceHolder holder = getSurfaceHolder();
 
 			float scale = (float) bitmapOfFrame.getHeight() / surfaceHeight;
 
 			float allowedWidth = ((float) bitmapOfFrame.getWidth()) / scale;
-
-			window = new Rect(0, 0, (int) allowedWidth, surfaceFrame.height());
+			float padding = 0;
+			if (allowedWidth < surfaceFrame.width()) {
+				padding = (surfaceFrame.width() - allowedWidth) / 2f;
+			}
+			window = new Rect((int) padding, 0, (int) (allowedWidth + padding), surfaceFrame.height());
 			Canvas c = null;
 			try {
 				c = holder.lockCanvas();
@@ -83,6 +89,10 @@ public class TheWall extends WallpaperService {
 			}
 		}
 
+		private Bitmap getTestResource() {
+			return BitmapFactory.decodeResource(getResources(), drawable.ic_launcher);
+		}
+
 		private Bitmap getTestBM() {
 			int squareSize = 3000;
 			int step = (int) ((float) squareSize * .05f);
@@ -90,18 +100,6 @@ public class TheWall extends WallpaperService {
 			Canvas c = new Canvas(createBitmap);
 			c.drawColor(Color.WHITE);
 			Paint paint = new Paint();
-			// int[] colors = new int[] { Color.MAGENTA, Color.RED, Color.CYAN,
-			// Color.YELLOW, Color.DKGRAY, Color.BLUE, Color.BLACK, Color.WHITE
-			// };
-			// Random rand = new Random();
-			// for (int x = 0; x < createBitmap.getWidth(); x += step) {
-			// for (int y = 0; y < createBitmap.getHeight(); y += step) {
-			// int color = colors[rand.nextInt(colors.length)];
-			// paint.setColor(color);
-			// Rect r = new Rect(x, y, x + step, y + step);
-			// c.drawRect(r, paint);
-			// }
-			// }
 
 			c.drawColor(Color.MAGENTA);
 			Rect r = new Rect(step, step, c.getWidth() - step, c.getHeight() - step);
