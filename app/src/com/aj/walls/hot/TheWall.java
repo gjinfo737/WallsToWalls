@@ -3,11 +3,10 @@ package com.aj.walls.hot;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.graphics.Bitmap;
-import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
+import android.graphics.PointF;
 import android.graphics.Rect;
 import android.os.Handler;
 import android.service.wallpaper.WallpaperService;
@@ -38,9 +37,14 @@ public class TheWall extends WallpaperService {
 		return new GalleryEngine();
 	}
 
-	public class GalleryEngine extends Engine implements OnSharedPreferenceChangeListener {
+	public class GalleryEngine extends Engine implements
+			OnSharedPreferenceChangeListener {
 		private int index = 0;
-		private int[] drawables = new int[] { drawable._001, drawable._002, drawable._003, drawable._004, drawable._005 };
+		private static final int STEP = 1;
+		private PointF lastPoint;
+
+		private int[] drawables = new int[] { drawable._001, drawable._002,
+				drawable._003, drawable._004, drawable._005 };
 
 		@Override
 		public void onCreate(SurfaceHolder surfaceHolder) {
@@ -55,31 +59,48 @@ public class TheWall extends WallpaperService {
 		}
 
 		@Override
-		public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-			// TODO Auto-generated method stub
-
+		public void onSharedPreferenceChanged(
+				SharedPreferences sharedPreferences, String key) {
 		}
 
-		@Override
 		public void onTouchEvent(MotionEvent event) {
-			super.onTouchEvent(event);
-
 			int action = event.getAction();
-			if (action != MotionEvent.ACTION_UP && action != MotionEvent.ACTION_DOWN) {
-				nextIndex();
-				drawFrame();
+			PointF point = new PointF(event.getX(), event.getY());
+			if (lastPoint == null)
+				lastPoint = point;
+			switch (action) {
+			case MotionEvent.ACTION_MOVE:
+				if (lastPoint.x - point.x > -10) {
+					goRight();
+				} else if (lastPoint.x - point.x < 10) {
+					goLeft();
+				}
+				lastPoint = point;
+				break;
+
+			default:
+				break;
 			}
 
 		}
 
-		private void nextIndex() {
-			index++;
+		private void goLeft() {
+			index += STEP;
 			if (index >= drawables.length)
+				index = drawables.length - 1;
+			drawFrame();
+		}
+
+		private void goRight() {
+			index -= STEP;
+			if (index < 0)
 				index = 0;
+			drawFrame();
 		}
 
 		private Bitmap getBitmapForCurrentIndex() {
-			return BitmapFactory.decodeResource(getResources(), drawables[index]);
+			return BitmapFactory.decodeResource(getResources(),
+					drawables[index]);
 		}
 
 		private void drawFrame() {
@@ -97,7 +118,8 @@ public class TheWall extends WallpaperService {
 			if (allowedWidth < surfaceFrame.width()) {
 				padding = (surfaceFrame.width() - allowedWidth) / 2f;
 			}
-			Rect window = new Rect((int) padding, 0, (int) (allowedWidth + padding), surfaceFrame.height());
+			Rect window = new Rect((int) padding, 0,
+					(int) (allowedWidth + padding), surfaceFrame.height());
 			drawBitmap(bitmapOfFrame, window);
 		}
 
@@ -118,28 +140,27 @@ public class TheWall extends WallpaperService {
 			}
 		}
 
-		private Bitmap getTestResource() {
-			return BitmapFactory.decodeResource(getResources(), drawable.ic_launcher);
-		}
-
-		private Bitmap getTestBM() {
-			int squareSize = 3000;
-			int step = (int) ((float) squareSize * .05f);
-			Bitmap createBitmap = Bitmap.createBitmap(squareSize, squareSize, Config.ARGB_8888);
-			Canvas c = new Canvas(createBitmap);
-			c.drawColor(Color.WHITE);
-			Paint paint = new Paint();
-
-			c.drawColor(Color.MAGENTA);
-			Rect r = new Rect(step, step, c.getWidth() - step, c.getHeight() - step);
-			paint.setColor(Color.CYAN);
-			c.drawRect(r, paint);
-			paint.setTextSize(80);
-			paint.setColor(Color.WHITE);
-			c.drawText("" + squareSize, c.getWidth() / 2f, c.getHeight() / 2f, paint);
-
-			return createBitmap;
-		}
+		// private Bitmap getTestBM() {
+		// int squareSize = 3000;
+		// int step = (int) ((float) squareSize * .05f);
+		// Bitmap createBitmap = Bitmap.createBitmap(squareSize, squareSize,
+		// Config.ARGB_8888);
+		// Canvas c = new Canvas(createBitmap);
+		// c.drawColor(Color.WHITE);
+		// Paint paint = new Paint();
+		//
+		// c.drawColor(Color.MAGENTA);
+		// Rect r = new Rect(step, step, c.getWidth() - step, c.getHeight()
+		// - step);
+		// paint.setColor(Color.CYAN);
+		// c.drawRect(r, paint);
+		// paint.setTextSize(80);
+		// paint.setColor(Color.WHITE);
+		// c.drawText("" + squareSize, c.getWidth() / 2f, c.getHeight() / 2f,
+		// paint);
+		//
+		// return createBitmap;
+		// }
 	}
 
 }
