@@ -1,7 +1,5 @@
 package com.aj.walls.hot;
 
-import java.util.Random;
-
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.graphics.Bitmap;
@@ -59,15 +57,17 @@ public class TheWall extends WallpaperService {
 		private void drawFrame() {
 			Rect window = null;
 			Rect surfaceFrame = getSurfaceHolder().getSurfaceFrame();
+			float surfaceHeight = (float) surfaceFrame.height();
+			if (surfaceHeight == 0)
+				return;
 			Bitmap bitmapOfFrame = getTestBM();
 			final SurfaceHolder holder = getSurfaceHolder();
 
-			float scale = (float) bitmapOfFrame.getHeight() / (float) surfaceFrame.height();
+			float scale = (float) bitmapOfFrame.getHeight() / surfaceHeight;
 
-			float allowedWidth = scale * ((float) bitmapOfFrame.getWidth());
-			int sidePadding = (int) (allowedWidth / 2f);
+			float allowedWidth = ((float) bitmapOfFrame.getWidth()) / scale;
 
-			window = new Rect(0, 0, bitmapOfFrame.getWidth(), bitmapOfFrame.getHeight());
+			window = new Rect(0, 0, (int) allowedWidth, surfaceFrame.height());
 			Canvas c = null;
 			try {
 				c = holder.lockCanvas();
@@ -84,22 +84,33 @@ public class TheWall extends WallpaperService {
 		}
 
 		private Bitmap getTestBM() {
-			int squareSize = 300;
-			int step = (int) ((float) squareSize * .1f);
+			int squareSize = 3000;
+			int step = (int) ((float) squareSize * .05f);
 			Bitmap createBitmap = Bitmap.createBitmap(squareSize, squareSize, Config.ARGB_8888);
 			Canvas c = new Canvas(createBitmap);
 			c.drawColor(Color.WHITE);
 			Paint paint = new Paint();
-			int[] colors = new int[] { Color.MAGENTA, Color.RED, Color.CYAN, Color.YELLOW, Color.DKGRAY, Color.BLUE, Color.BLACK, Color.WHITE };
-			Random rand = new Random();
-			for (int x = 0; x < createBitmap.getWidth(); x += step) {
-				for (int y = 0; y < createBitmap.getHeight(); y += step) {
-					int color = colors[rand.nextInt(colors.length)];
-					paint.setColor(color);
-					Rect r = new Rect(x, y, x + step, y + step);
-					c.drawRect(r, paint);
-				}
-			}
+			// int[] colors = new int[] { Color.MAGENTA, Color.RED, Color.CYAN,
+			// Color.YELLOW, Color.DKGRAY, Color.BLUE, Color.BLACK, Color.WHITE
+			// };
+			// Random rand = new Random();
+			// for (int x = 0; x < createBitmap.getWidth(); x += step) {
+			// for (int y = 0; y < createBitmap.getHeight(); y += step) {
+			// int color = colors[rand.nextInt(colors.length)];
+			// paint.setColor(color);
+			// Rect r = new Rect(x, y, x + step, y + step);
+			// c.drawRect(r, paint);
+			// }
+			// }
+
+			c.drawColor(Color.MAGENTA);
+			Rect r = new Rect(step, step, c.getWidth() - step, c.getHeight() - step);
+			paint.setColor(Color.CYAN);
+			c.drawRect(r, paint);
+			paint.setTextSize(80);
+			paint.setColor(Color.WHITE);
+			c.drawText("" + squareSize, c.getWidth() / 2f, c.getHeight() / 2f, paint);
+
 			return createBitmap;
 		}
 	}
