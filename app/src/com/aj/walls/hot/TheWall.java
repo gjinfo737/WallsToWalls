@@ -65,7 +65,7 @@ public class TheWall extends WallpaperService {
 			super.onTouchEvent(event);
 
 			int action = event.getAction();
-			if (action == MotionEvent.ACTION_DOWN) {
+			if (action != MotionEvent.ACTION_UP && action != MotionEvent.ACTION_DOWN) {
 				nextIndex();
 				drawFrame();
 			}
